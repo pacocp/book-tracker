@@ -30,12 +30,113 @@
       line-height: 1.5;
     }
 
+    /* Login Overlay */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #login-overlay.hidden {
+      display: none;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .login-box h2 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .login-box input[type="password"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .login-box input[type="password"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .login-error {
+      color: #b91c1c;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+      text-align: center;
+      display: none;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.75rem 1.25rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-login:hover { opacity: 0.85; }
+
+    .btn-logout {
+      padding: 0.4rem 0.85rem;
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .btn-logout:hover { background: var(--accent-light); }
+
     /* Header */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header .header-left {
       text-align: center;
+      flex: 1;
     }
 
     header h1 {
@@ -56,6 +157,10 @@
       max-width: 1100px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
+    }
+
+    main.hidden {
+      display: none;
     }
 
     /* Add Form */
@@ -209,6 +314,7 @@
       display: flex;
       gap: 0.4rem;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .btn-sm {
@@ -226,6 +332,44 @@
     .btn-sm:hover { background: var(--accent-light); }
     .btn-sm.delete:hover { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 
+    /* Progress */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 70px;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.2s;
+    }
+
+    .progress-value {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 35px;
+      text-align: right;
+    }
+
     /* Footer */
     footer {
       text-align: center;
@@ -233,16 +377,36 @@
       color: var(--text-muted);
       font-size: 0.8rem;
     }
+
+    footer.hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
+<!-- Login Overlay -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>Bookshelf</h2>
+    <p>Enter the shared password to continue</p>
+    <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+    <form id="login-form">
+      <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+  </div>
+</div>
+
 <header>
-  <h1>Bookshelf</h1>
-  <p>Track your reading journey</p>
+  <div class="header-left">
+    <h1>Bookshelf</h1>
+    <p>Track your reading journey</p>
+  </div>
+  <button class="btn-logout" id="btn-logout">Sign Out</button>
 </header>
 
-<main>
+<main id="main-content">
   <form class="add-form" id="addForm">
     <h2>Add a book</h2>
     <div class="form-row">
@@ -284,16 +448,81 @@
   </div>
 </main>
 
-<footer>Books are saved to a shared Supabase database.</footer>
+<footer id="footer">Books are saved to a shared Supabase database.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // === CONFIGURATION ===
-  // Replace these with your actual Supabase credentials from Settings → API
   const SUPABASE_URL = 'YOUR_SUPABASE_URL';
   const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
   const { createClient } = window.supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // === SESSION ===
+  const AUTH_KEY = 'booklist_auth';
+
+  function isAuthenticated() {
+    return sessionStorage.getItem(AUTH_KEY) === 'true';
+  }
+
+  function setAuthenticated(value) {
+    sessionStorage.setItem(AUTH_KEY, value ? 'true' : 'false');
+  }
+
+  function logout() {
+    setAuthenticated(false);
+    checkAuth();
+  }
+
+  async function validatePassword(password) {
+    const { data, error } = await sb
+      .from('auth')
+      .select('password')
+      .eq('id', 'shared')
+      .single();
+    if (error || !data) return false;
+    return data.password === password;
+  }
+
+  async function checkAuth() {
+    if (isAuthenticated()) {
+      showApp();
+    } else {
+      showLogin();
+    }
+  }
+
+  function showLogin() {
+    document.getElementById('login-overlay').classList.remove('hidden');
+    document.getElementById('main-content').classList.add('hidden');
+    document.getElementById('footer').classList.add('hidden');
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-error').style.display = 'none';
+  }
+
+  function showApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('main-content').classList.remove('hidden');
+    document.getElementById('footer').classList.remove('hidden');
+    render();
+  }
+
+  // === LOGIN FORM ===
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const password = document.getElementById('login-password').value;
+    document.getElementById('login-error').style.display = 'none';
+
+    const valid = await validatePassword(password);
+    if (valid) {
+      setAuthenticated(true);
+      showApp();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', logout);
 
   // === DATA ===
   async function loadBooks() {
@@ -311,17 +540,29 @@
   async function addBook(title, author, status) {
     const { error } = await sb
       .from('books')
-      .insert([{ title, author: author || '', status }]);
+      .insert([{ title, author: author || '', status, progress: 0 }]);
     if (error) console.error('Error adding book:', error);
     render();
   }
 
   async function moveBook(id, newStatus) {
+    const updates = { status: newStatus };
+    if (newStatus === 'finished') updates.progress = 100;
+    if (newStatus === 'reading') updates.progress = updates.progress || 0;
     const { error } = await sb
       .from('books')
-      .update({ status: newStatus })
+      .update(updates)
       .eq('id', id);
     if (error) console.error('Error moving book:', error);
+    render();
+  }
+
+  async function updateProgress(id, progress) {
+    const { error } = await sb
+      .from('books')
+      .update({ progress })
+      .eq('id', id);
+    if (error) console.error('Error updating progress:', error);
     render();
   }
 
@@ -334,12 +575,7 @@
     render();
   }
 
-  function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
-  }
-
   // === ACTIONS ===
-  // --- Helpers ---
   function esc(str) {
     const div = document.createElement('div');
     div.textContent = str;
@@ -356,6 +592,22 @@
       .filter(o => o.value !== currentStatus)
       .map(o => `<button class="btn-sm" data-id="${bookId}" data-status="${o.value}">${o.label}</button>`)
       .join('');
+  }
+
+  function buildProgressUI(book) {
+    if (book.status !== 'reading') return '';
+    return `
+      <div class="progress-row">
+        <span class="progress-label">Progress</span>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: ${book.progress || 0}%"></div>
+        </div>
+        <input type="number" class="progress-input" data-id="${book.id}"
+          value="${book.progress || 0}" min="0" max="100"
+          style="width: 45px; padding: 0.2rem 0.3rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.75rem; text-align: center;">
+        <span class="progress-value">${book.progress || 0}%</span>
+      </div>
+    `;
   }
 
   // === RENDER ===
@@ -387,6 +639,7 @@
             ${buildMoveButtons(book.status, book.id)}
             <button class="btn-sm delete" data-id="${book.id}">Remove</button>
           </div>
+          ${buildProgressUI(book)}
         `;
         el.appendChild(card);
       });
@@ -405,6 +658,15 @@
     }
   });
 
+  document.addEventListener('input', e => {
+    if (e.target.classList.contains('progress-input')) {
+      const id = e.target.dataset.id;
+      const progress = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+      e.target.value = progress;
+      updateProgress(id, progress);
+    }
+  });
+
   // === FORM ===
   document.getElementById('addForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -417,7 +679,7 @@
   });
 
   // === INIT ===
-  render();
+  checkAuth();
 </script>
 
 </body>
