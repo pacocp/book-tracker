@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshelf</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --border: #e7e5e4;
+      --text: #1c1917;
+      --text-muted: #78716c;
+      --accent: #44403c;
+      --accent-light: #f5f5f4;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Main */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Add Form */
+    .add-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .add-form h2 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .form-row input,
+    .form-row select {
+      padding: 0.6rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+
+    .form-row input:focus,
+    .form-row select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-row input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-row .input-title { flex: 2; min-width: 160px; }
+    .form-row .input-author { flex: 1.5; min-width: 120px; }
+    .form-row .input-status { flex: 1; min-width: 130px; }
+
+    .btn-add {
+      padding: 0.6rem 1.25rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-add:hover { opacity: 0.85; }
+
+    /* Board */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 700px) {
+      .board { grid-template-columns: 1fr; }
+    }
+
+    .column {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+    }
+
+    .column-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .column-header h3 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 1rem;
+    }
+
+    .count {
+      background: var(--accent-light);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+    }
+
+    .column-body {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 2rem 1rem;
+      font-style: italic;
+    }
+
+    /* Book Card */
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      transition: box-shadow 0.15s;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+      line-height: 1.3;
+    }
+
+    .card-author {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.65rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+      transition: background 0.12s;
+    }
+
+    .btn-sm:hover { background: var(--accent-light); }
+    .btn-sm.delete:hover { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Bookshelf</h1>
+  <p>Track your reading journey</p>
+</header>
+
+<main>
+  <form class="add-form" id="addForm">
+    <h2>Add a book</h2>
+    <div class="form-row">
+      <input type="text" class="input-title" id="inputTitle" placeholder="Book title" required>
+      <input type="text" class="input-author" id="inputAuthor" placeholder="Author (optional)">
+      <select class="input-status" id="inputStatus">
+        <option value="reading">Reading Now</option>
+        <option value="to-read">To Read</option>
+        <option value="finished">Finished</option>
+      </select>
+      <button type="submit" class="btn-add">Add Book</button>
+    </div>
+  </form>
+
+  <div class="board">
+    <div class="column">
+      <div class="column-header">
+        <h3>Reading Now</h3>
+        <span class="count" id="count-reading">0</span>
+      </div>
+      <div class="column-body" id="col-reading"></div>
+    </div>
+
+    <div class="column">
+      <div class="column-header">
+        <h3>To Read</h3>
+        <span class="count" id="count-to-read">0</span>
+      </div>
+      <div class="column-body" id="col-to-read"></div>
+    </div>
+
+    <div class="column">
+      <div class="column-header">
+        <h3>Finished</h3>
+        <span class="count" id="count-finished">0</span>
+      </div>
+      <div class="column-body" id="col-finished"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Books are saved to a shared Supabase database.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // === CONFIGURATION ===
+  // Replace these with your actual Supabase credentials from Settings → API
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  const { createClient } = window.supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // === DATA ===
+  async function loadBooks() {
+    const { data, error } = await sb
+      .from('books')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Error loading books:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async function addBook(title, author, status) {
+    const { error } = await sb
+      .from('books')
+      .insert([{ title, author: author || '', status }]);
+    if (error) console.error('Error adding book:', error);
+    render();
+  }
+
+  async function moveBook(id, newStatus) {
+    const { error } = await sb
+      .from('books')
+      .update({ status: newStatus })
+      .eq('id', id);
+    if (error) console.error('Error moving book:', error);
+    render();
+  }
+
+  async function deleteBook(id) {
+    const { error } = await sb
+      .from('books')
+      .delete()
+      .eq('id', id);
+    if (error) console.error('Error deleting book:', error);
+    render();
+  }
+
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  // === ACTIONS ===
+  // --- Helpers ---
+  function esc(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function buildMoveButtons(currentStatus, bookId) {
+    const options = [
+      { value: 'reading', label: 'Reading' },
+      { value: 'to-read', label: 'To Read' },
+      { value: 'finished', label: 'Finished' },
+    ];
+    return options
+      .filter(o => o.value !== currentStatus)
+      .map(o => `<button class="btn-sm" data-id="${bookId}" data-status="${o.value}">${o.label}</button>`)
+      .join('');
+  }
+
+  // === RENDER ===
+  async function render() {
+    const books = await loadBooks();
+    const columns = { reading: [], 'to-read': [], finished: [] };
+
+    books.forEach(b => {
+      if (columns[b.status]) columns[b.status].push(b);
+    });
+
+    for (const [status, col] of Object.entries(columns)) {
+      document.getElementById(`count-${status}`).textContent = col.length;
+      const el = document.getElementById(`col-${status}`);
+      el.innerHTML = '';
+
+      if (col.length === 0) {
+        el.innerHTML = '<p class="empty-state">No books here yet</p>';
+        continue;
+      }
+
+      col.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-title">${esc(book.title)}</div>
+          ${book.author ? `<div class="card-author">${esc(book.author)}</div>` : ''}
+          <div class="card-actions">
+            ${buildMoveButtons(book.status, book.id)}
+            <button class="btn-sm delete" data-id="${book.id}">Remove</button>
+          </div>
+        `;
+        el.appendChild(card);
+      });
+    }
+  }
+
+  // === EVENT DELEGATION ===
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-sm');
+    if (!btn) return;
+
+    if (btn.classList.contains('delete')) {
+      deleteBook(btn.dataset.id);
+    } else if (btn.dataset.id && btn.dataset.status) {
+      moveBook(btn.dataset.id, btn.dataset.status);
+    }
+  });
+
+  // === FORM ===
+  document.getElementById('addForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const title = document.getElementById('inputTitle').value.trim();
+    const author = document.getElementById('inputAuthor').value.trim();
+    const status = document.getElementById('inputStatus').value;
+    if (!title) return;
+    await addBook(title, author, status);
+    e.target.reset();
+  });
+
+  // === INIT ===
+  render();
+</script>
+
+</body>
+</html>
