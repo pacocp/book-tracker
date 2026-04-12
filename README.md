@@ -1,5 +1,7 @@
 # Bookshelf
 
+[screenshot.png](Example of the page)
+
 A minimalist book-tracking app with a login screen. Add books, move them between *Reading Now*, *To Read*, and *Finished*, track your reading progress, and watch your reading journey grow.
 
 ## Features
