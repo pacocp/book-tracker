@@ -134,6 +134,16 @@
       justify-content: space-between;
     }
 
+    .emoji-decoration {
+      font-style: normal;
+      font-size: 1.1em;
+      margin-right: 0.35em;
+    }
+
+    .column-header h3 .emoji-decoration {
+      font-size: 1em;
+    }
+
     header .header-left {
       text-align: center;
       flex: 1;
@@ -388,7 +398,7 @@
 <!-- Login Overlay -->
 <div id="login-overlay">
   <div class="login-box">
-    <h2>Bookshelf</h2>
+    <h2>📚 Bookshelf</h2>
     <p>Enter the shared password to continue</p>
     <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
     <form id="login-form">
@@ -400,7 +410,7 @@
 
 <header>
   <div class="header-left">
-    <h1>Bookshelf</h1>
+    <h1>📚 Bookshelf</h1>
     <p>Track your reading journey</p>
   </div>
   <button class="btn-logout" id="btn-logout">Sign Out</button>
@@ -408,7 +418,7 @@
 
 <main id="main-content">
   <form class="add-form" id="addForm">
-    <h2>Add a book</h2>
+    <h2>➕ Add a book</h2>
     <div class="form-row">
       <input type="text" class="input-title" id="inputTitle" placeholder="Book title" required>
       <input type="text" class="input-author" id="inputAuthor" placeholder="Author (optional)">
@@ -424,7 +434,7 @@
   <div class="board">
     <div class="column">
       <div class="column-header">
-        <h3>Reading Now</h3>
+        <h3>📖 Reading Now</h3>
         <span class="count" id="count-reading">0</span>
       </div>
       <div class="column-body" id="col-reading"></div>
@@ -432,7 +442,7 @@
 
     <div class="column">
       <div class="column-header">
-        <h3>To Read</h3>
+        <h3>🔖 To Read</h3>
         <span class="count" id="count-to-read">0</span>
       </div>
       <div class="column-body" id="col-to-read"></div>
@@ -440,7 +450,7 @@
 
     <div class="column">
       <div class="column-header">
-        <h3>Finished</h3>
+        <h3>✅ Finished</h3>
         <span class="count" id="count-finished">0</span>
       </div>
       <div class="column-body" id="col-finished"></div>
@@ -448,7 +458,7 @@
   </div>
 </main>
 
-<footer id="footer">Books are saved to a shared Supabase database.</footer>
+<footer id="footer">📗 Books are saved to a shared Supabase database. Made with love by pacocp.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -625,7 +635,7 @@
       el.innerHTML = '';
 
       if (col.length === 0) {
-        el.innerHTML = '<p class="empty-state">No books here yet</p>';
+        el.innerHTML = '<p class="empty-state">📭 No books here yet</p>';
         continue;
       }
 
