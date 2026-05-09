@@ -8,97 +8,59 @@ A minimalist book-tracking app with a login screen. Add books, move them between
 
 - **Three categories**: Reading Now, To Read, Finished
 - **Reading progress**: Track percentage complete for books you're reading
+- **Read date**: Automatically recorded when you move a book to Finished
 - **Shared password**: Simple authentication to keep your list private
-- **Persistent storage** via Supabase — your list survives anywhere
+- **Persistent storage** via `localStorage` + synced to a JSON file in the GitHub repo
 - **Responsive** — works on desktop and mobile
 - **Zero dependencies** — one HTML file, no build step
 
+## Data storage
+
+Books are stored in `localStorage` in your browser and automatically synced to `books.json` in the GitHub repo via the GitHub API. On page load, the app fetches the latest data from the repo. Changes are debounced and committed back 2 seconds after the last edit.
+
+The JSON is organized by categories:
+
+```json
+{
+  "reading": [{ "id": "...", "title": "...", ... }],
+  "to-read": [...],
+  "finished": [...]
+}
+```
+
 ## Setup
 
-### 1. Create a Supabase project
-
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Once created, open the **SQL Editor** in the left sidebar
-3. Run the following SQL to create the database tables:
-
-```sql
--- Books table
-create table books (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  author text default '',
-  status text not null default 'to-read',
-  progress integer default 0,
-  created_at timestamptz default now()
-);
-
--- Auth table (shared password)
-create table auth (
-  id text primary key default 'shared',
-  password text not null
-);
-
--- Insert your password (change 'mypassword' to whatever you want)
-insert into auth (id, password) values ('shared', 'mypassword');
-
--- Enable row-level security
-alter table books enable row level security;
-alter table auth enable row level security;
-
--- Policies (allow anyone to read/write books; allow read for auth)
-create policy "Allow all" on books for all using (true);
-create policy "Allow read" on auth for select using (true);
-```
-
-### 2. Get your Supabase credentials
-
-1. Go to **Settings → API** in your Supabase project
-2. Copy the **Project URL** (e.g., `https://xyzabc.supabase.co`)
-3. Copy the **anon public key** (the long string under "Project API keys")
-
-### 3. Configure the app
-
-Open `index.html` and replace the placeholder values at the top of the JavaScript section:
-
-```javascript
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';        // ← replace here
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';   // ← replace here
-```
-
-### 4. Run locally
+### 1. Run locally
 
 ```bash
 python -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-Enter the password you set in the SQL setup to access the app.
+The password is configured via a placeholder — see deployment below for the recommended setup.
 
-## Deploying to GitHub Pages
-
-For automatic credential injection (recommended):
+### 2. Deploying to GitHub Pages
 
 1. Create a new repository on GitHub (e.g. `my-bookshelf`)
 2. Push this project to the repository:
 
 ```bash
 git init
-git add index.html README.md SPEC.md
+git add .
 git commit -m "Initial commit"
 git remote add origin https://github.com/YOUR_USERNAME/my-bookshelf.git
 git push -u origin main
 ```
 
 3. Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
-   - `SUPABASE_URL` — your Supabase Project URL
-   - `SUPABASE_ANON_KEY` — your anon public key
+
+   - `BOOK_PASSWORD` — the shared password to access the app
+   - `GH_PAT` — a [GitHub Personal Access Token](https://github.com/settings/tokens) with **Contents** → **Read and write** permissions (fine-grained) or `repo` scope (classic). This token is used by the app in the browser to push book changes back to `books.json`.
 
 4. Go to **Settings → Pages** → **Source**: select **GitHub Actions**
 
-5. Edit `.github/workflows/deploy.yml` and update the `sed` command if your branch name is different from `main`
-
-The GitHub Action will automatically replace `YOUR_SUPABASE_URL` and `YOUR_SUPABASE_ANON_KEY` with your secrets when deploying.
+The GitHub Action will automatically replace `YOUR_BOOK_PASSWORD` and `YOUR_GH_PAT` with your secrets when deploying.
 
 ## Tech
 
-Vanilla HTML, CSS, and JavaScript. No frameworks, no build tools. Data stored in Supabase (PostgreSQL).
+Vanilla HTML, CSS, and JavaScript. No frameworks, no build tools. Data stored in `localStorage` and synced to `books.json` in the repo via the GitHub Contents API.

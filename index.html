@@ -320,6 +320,12 @@
       margin-bottom: 0.75rem;
     }
 
+    .card-read-date {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
     .card-actions {
       display: flex;
       gap: 0.4rem;
@@ -458,15 +464,17 @@
   </div>
 </main>
 
-<footer id="footer">📗 Books are saved to a shared Supabase database. Made with love by pacocp.</footer>
+<footer id="footer">📗 Books are synced to the GitHub repo. Made with love by pacocp.</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // === CONFIGURATION ===
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-  const { createClient } = window.supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const BOOK_PASSWORD = 'YOUR_BOOK_PASSWORD';
+  const GH_PAT = 'YOUR_GH_PAT';
+  const GITHUB_OWNER = 'pacocp';
+  const GITHUB_REPO = 'book-tracker';
+  const GITHUB_BOOKS_PATH = 'books.json';
+  const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${GITHUB_BOOKS_PATH}`;
+  const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_BOOKS_PATH}`;
 
   // === SESSION ===
   const AUTH_KEY = 'booklist_auth';
@@ -484,17 +492,11 @@
     checkAuth();
   }
 
-  async function validatePassword(password) {
-    const { data, error } = await sb
-      .from('auth')
-      .select('password')
-      .eq('id', 'shared')
-      .single();
-    if (error || !data) return false;
-    return data.password === password;
+  function validatePassword(password) {
+    return password === BOOK_PASSWORD;
   }
 
-  async function checkAuth() {
+  function checkAuth() {
     if (isAuthenticated()) {
       showApp();
     } else {
@@ -518,13 +520,12 @@
   }
 
   // === LOGIN FORM ===
-  document.getElementById('login-form').addEventListener('submit', async e => {
+  document.getElementById('login-form').addEventListener('submit', e => {
     e.preventDefault();
     const password = document.getElementById('login-password').value;
     document.getElementById('login-error').style.display = 'none';
 
-    const valid = await validatePassword(password);
-    if (valid) {
+    if (validatePassword(password)) {
       setAuthenticated(true);
       showApp();
     } else {
@@ -534,55 +535,150 @@
 
   document.getElementById('btn-logout').addEventListener('click', logout);
 
-  // === DATA ===
-  async function loadBooks() {
-    const { data, error } = await sb
-      .from('books')
-      .select('*')
-      .order('created_at', { ascending: true });
-    if (error) {
-      console.error('Error loading books:', error);
-      return [];
+  // === DATA (localStorage JSON, organized by categories) ===
+  const STORAGE_KEY = 'booklist_data';
+
+  function getDefaultData() {
+    return { reading: [], 'to-read': [], finished: [] };
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : getDefaultData();
+    } catch {
+      return getDefaultData();
     }
-    return data || [];
   }
 
-  async function addBook(title, author, status) {
-    const { error } = await sb
-      .from('books')
-      .insert([{ title, author: author || '', status, progress: 0 }]);
-    if (error) console.error('Error adding book:', error);
-    render();
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  async function moveBook(id, newStatus) {
-    const updates = { status: newStatus };
-    if (newStatus === 'finished') updates.progress = 100;
-    if (newStatus === 'reading') updates.progress = updates.progress || 0;
-    const { error } = await sb
-      .from('books')
-      .update(updates)
-      .eq('id', id);
-    if (error) console.error('Error moving book:', error);
+  function addBook(title, author, status) {
+    const data = loadData();
+    const book = {
+      id: crypto.randomUUID(),
+      title,
+      author: author || '',
+      status,
+      progress: 0,
+      created_at: new Date().toISOString(),
+      read_date: null
+    };
+    data[status].push(book);
+    saveData(data);
     render();
+    scheduleSync();
   }
 
-  async function updateProgress(id, progress) {
-    const { error } = await sb
-      .from('books')
-      .update({ progress })
-      .eq('id', id);
-    if (error) console.error('Error updating progress:', error);
+  function moveBook(id, newStatus) {
+    const data = loadData();
+    let book = null;
+    for (const category of ['reading', 'to-read', 'finished']) {
+      const idx = data[category].findIndex(b => b.id === id);
+      if (idx !== -1) {
+        book = data[category].splice(idx, 1)[0];
+        break;
+      }
+    }
+    if (!book) return;
+    book.status = newStatus;
+    if (newStatus === 'finished') {
+      book.progress = 100;
+      book.read_date = new Date().toISOString().split('T')[0];
+    }
+    if (newStatus === 'reading' && !book.progress) {
+      book.progress = 0;
+    }
+    data[newStatus].push(book);
+    saveData(data);
     render();
+    scheduleSync();
   }
 
-  async function deleteBook(id) {
-    const { error } = await sb
-      .from('books')
-      .delete()
-      .eq('id', id);
-    if (error) console.error('Error deleting book:', error);
+  function updateProgress(id, progress) {
+    const data = loadData();
+    for (const category of ['reading', 'to-read', 'finished']) {
+      const book = data[category].find(b => b.id === id);
+      if (book) {
+        book.progress = progress;
+        break;
+      }
+    }
+    saveData(data);
     render();
+    scheduleSync();
+  }
+
+  function deleteBook(id) {
+    const data = loadData();
+    for (const category of ['reading', 'to-read', 'finished']) {
+      const idx = data[category].findIndex(b => b.id === id);
+      if (idx !== -1) {
+        data[category].splice(idx, 1);
+        break;
+      }
+    }
+    saveData(data);
+    render();
+    scheduleSync();
+  }
+
+  // === GITHUB SYNC ===
+  function base64Encode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  let syncTimeout = null;
+  function scheduleSync() {
+    if (syncTimeout) clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(syncToGitHub, 2000);
+  }
+
+  async function syncToGitHub() {
+    const data = loadData();
+    try {
+      const infoResp = await fetch(GITHUB_API_URL, {
+        headers: { Authorization: `Bearer ${GH_PAT}` }
+      });
+      let sha = null;
+      if (infoResp.ok) {
+        const info = await infoResp.json();
+        sha = info.sha;
+      }
+      const content = base64Encode(JSON.stringify(data, null, 2));
+      const body = { message: 'Update books', content };
+      if (sha) body.sha = sha;
+      await fetch(GITHUB_API_URL, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${GH_PAT}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (e) {
+      console.error('GitHub sync failed:', e);
+    }
+  }
+
+  async function loadFromGitHub() {
+    try {
+      const resp = await fetch(GITHUB_RAW_URL);
+      if (resp.ok) {
+        const data = await resp.json();
+        saveData(data);
+        if (isAuthenticated()) render();
+      }
+    } catch (e) {
+      console.error('GitHub load failed:', e);
+    }
   }
 
   // === ACTIONS ===
@@ -621,13 +717,9 @@
   }
 
   // === RENDER ===
-  async function render() {
-    const books = await loadBooks();
-    const columns = { reading: [], 'to-read': [], finished: [] };
-
-    books.forEach(b => {
-      if (columns[b.status]) columns[b.status].push(b);
-    });
+  function render() {
+    const data = loadData();
+    const columns = data;
 
     for (const [status, col] of Object.entries(columns)) {
       document.getElementById(`count-${status}`).textContent = col.length;
@@ -642,9 +734,14 @@
       col.forEach(book => {
         const card = document.createElement('div');
         card.className = 'card';
+        let readDateHtml = '';
+        if (book.read_date) {
+          readDateHtml = `<div class="card-read-date">✅ Read on ${esc(book.read_date)}</div>`;
+        }
         card.innerHTML = `
           <div class="card-title">${esc(book.title)}</div>
           ${book.author ? `<div class="card-author">${esc(book.author)}</div>` : ''}
+          ${readDateHtml}
           <div class="card-actions">
             ${buildMoveButtons(book.status, book.id)}
             <button class="btn-sm delete" data-id="${book.id}">Remove</button>
@@ -678,18 +775,19 @@
   });
 
   // === FORM ===
-  document.getElementById('addForm').addEventListener('submit', async e => {
+  document.getElementById('addForm').addEventListener('submit', e => {
     e.preventDefault();
     const title = document.getElementById('inputTitle').value.trim();
     const author = document.getElementById('inputAuthor').value.trim();
     const status = document.getElementById('inputStatus').value;
     if (!title) return;
-    await addBook(title, author, status);
+    addBook(title, author, status);
     e.target.reset();
   });
 
   // === INIT ===
   checkAuth();
+  loadFromGitHub();
 </script>
 
 </body>

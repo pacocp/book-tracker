@@ -1,0 +1,107 @@
+{
+  "reading": [
+    {
+      "id": "9549098a-ab91-48b3-97c5-821789704fa5",
+      "title": "Cuentos",
+      "author": "Emilia Pardo Bazán",
+      "status": "reading",
+      "progress": 46,
+      "created_at": "2026-04-13T18:24:30.465366+00:00",
+      "read_date": null
+    }
+  ],
+  "to-read": [
+    {
+      "id": "cb67100e-4772-46ac-b683-b269bcf0c3c3",
+      "title": "Mi suicidio",
+      "author": "Henri Roorda",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-04-13T18:25:27.681809+00:00",
+      "read_date": null
+    },
+    {
+      "id": "b4da6526-1c23-4b7c-af62-2a505851c437",
+      "title": "Contar es escuchar",
+      "author": "Ursula K Le Guin",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-04-13T18:25:52.344954+00:00",
+      "read_date": null
+    },
+    {
+      "id": "9e960ccd-c623-4cd0-afb7-c03e3683befa",
+      "title": "algo supuestamente divertido que nunca volveré a hacer",
+      "author": "David foster Wallace",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-04-18T16:53:33.811121+00:00",
+      "read_date": null
+    },
+    {
+      "id": "9e366ad6-39f4-4d80-afa9-e2ffb667ec1c",
+      "title": "la única historia",
+      "author": "Julián barnez",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-04-27T12:30:30.613308+00:00",
+      "read_date": null
+    },
+    {
+      "id": "ee0fde29-4d66-45f2-be2f-a206306cafdb",
+      "title": "determined",
+      "author": "Robert sapolsky",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-05-06T13:27:13.231477+00:00",
+      "read_date": null
+    },
+    {
+      "id": "52d1574b-aa49-4510-be77-7409f8dcc62b",
+      "title": "republica luminosa",
+      "author": "Andrés barba",
+      "status": "to-read",
+      "progress": 0,
+      "created_at": "2026-05-06T20:46:44.338932+00:00",
+      "read_date": null
+    }
+  ],
+  "finished": [
+    {
+      "id": "d7f5957c-b50a-46c4-a4ee-c660090d9199",
+      "title": "The infinity machine",
+      "author": "",
+      "status": "finished",
+      "progress": 100,
+      "created_at": "2026-04-12T18:39:05.07835+00:00",
+      "read_date": null
+    },
+    {
+      "id": "032fc380-8d5e-4495-8694-58c46393fd06",
+      "title": "Qué hacer con estos pedazos",
+      "author": "",
+      "status": "finished",
+      "progress": 100,
+      "created_at": "2026-04-13T18:24:04.396796+00:00",
+      "read_date": null
+    },
+    {
+      "id": "ae5317fb-2524-49f0-93b3-c87b8080f36f",
+      "title": "Bonsai",
+      "author": "Alejandro Zambra",
+      "status": "finished",
+      "progress": 100,
+      "created_at": "2026-04-13T18:26:21.535212+00:00",
+      "read_date": null
+    },
+    {
+      "id": "05d61726-327f-4835-a83d-61dcced155f3",
+      "title": "Mi planta de naranja lima",
+      "author": "",
+      "status": "finished",
+      "progress": 100,
+      "created_at": "2026-04-22T18:39:50.083747+00:00",
+      "read_date": null
+    }
+  ]
+}
