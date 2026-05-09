@@ -12,15 +12,6 @@
   ],
   "to-read": [
     {
-      "id": "cb67100e-4772-46ac-b683-b269bcf0c3c3",
-      "title": "Mi suicidio",
-      "author": "Henri Roorda",
-      "status": "to-read",
-      "progress": 0,
-      "created_at": "2026-04-13T18:25:27.681809+00:00",
-      "read_date": null
-    },
-    {
       "id": "b4da6526-1c23-4b7c-af62-2a505851c437",
       "title": "Contar es escuchar",
       "author": "Ursula K Le Guin",
@@ -102,6 +93,15 @@
       "progress": 100,
       "created_at": "2026-04-22T18:39:50.083747+00:00",
       "read_date": null
+    },
+    {
+      "id": "cb67100e-4772-46ac-b683-b269bcf0c3c3",
+      "title": "Mi suicidio",
+      "author": "Henri Roorda",
+      "status": "finished",
+      "progress": 100,
+      "created_at": "2026-04-13T18:25:27.681809+00:00",
+      "read_date": "2026-05-09"
     }
   ]
 }
