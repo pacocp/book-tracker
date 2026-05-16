@@ -17,6 +17,15 @@
       "progress": 0,
       "created_at": "2026-05-06T13:27:13.231477+00:00",
       "read_date": null
+    },
+    {
+      "id": "cf974652-5acd-4b5f-a00c-7f021fa71721",
+      "title": "el jardinero y la muerte",
+      "author": "",
+      "status": "reading",
+      "progress": 0,
+      "created_at": "2026-05-15T05:49:50.722Z",
+      "read_date": null
     }
   ],
   "to-read": [
@@ -111,15 +120,6 @@
       "progress": 100,
       "created_at": "2026-04-13T18:25:27.681809+00:00",
       "read_date": "2026-05-09"
-    },
-    {
-      "id": "cf974652-5acd-4b5f-a00c-7f021fa71721",
-      "title": "el jardinero y la muerte",
-      "author": "",
-      "status": "finished",
-      "progress": 0,
-      "created_at": "2026-05-15T05:49:50.722Z",
-      "read_date": null
     }
   ]
 }
