@@ -8,6 +8,15 @@
       "progress": 46,
       "created_at": "2026-04-13T18:24:30.465366+00:00",
       "read_date": null
+    },
+    {
+      "id": "ee0fde29-4d66-45f2-be2f-a206306cafdb",
+      "title": "determined",
+      "author": "Robert sapolsky",
+      "status": "reading",
+      "progress": 0,
+      "created_at": "2026-05-06T13:27:13.231477+00:00",
+      "read_date": null
     }
   ],
   "to-read": [
@@ -36,15 +45,6 @@
       "status": "to-read",
       "progress": 0,
       "created_at": "2026-04-27T12:30:30.613308+00:00",
-      "read_date": null
-    },
-    {
-      "id": "ee0fde29-4d66-45f2-be2f-a206306cafdb",
-      "title": "determined",
-      "author": "Robert sapolsky",
-      "status": "to-read",
-      "progress": 0,
-      "created_at": "2026-05-06T13:27:13.231477+00:00",
       "read_date": null
     },
     {
