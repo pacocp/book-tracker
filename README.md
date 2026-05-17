@@ -10,13 +10,13 @@ A minimalist book-tracking app with a login screen. Add books, move them between
 - **Reading progress**: Track percentage complete for books you're reading
 - **Read date**: Automatically recorded when you move a book to Finished
 - **Shared password**: Simple authentication to keep your list private
-- **Persistent storage** via `localStorage` + synced to a JSON file in the GitHub repo
+- **Persistent storage** via `localStorage` + synced to Firestore
 - **Responsive** — works on desktop and mobile
 - **Zero dependencies** — one HTML file, no build step
 
 ## Data storage
 
-Books are stored in `localStorage` in your browser and automatically synced to `books.json` in the GitHub repo via the GitHub API. On page load, the app fetches the latest data from the repo. Changes are debounced and committed back 2 seconds after the last edit.
+Books are stored in `localStorage` in your browser and automatically synced to **Firestore** (Google's serverless NoSQL database). On page load, the app fetches the latest data from Firestore. Changes are debounced and saved 2 seconds after the last edit. Firestore is faster and more reliable than the GitHub Contents API — single roundtrip reads and writes, no token exposure, and built-in retry.
 
 The JSON is organized by categories:
 
@@ -55,12 +55,48 @@ git push -u origin main
 3. Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
 
    - `BOOK_PASSWORD` — the shared password to access the app
-   - `GH_PAT` — a [GitHub Personal Access Token](https://github.com/settings/tokens) with **Contents** → **Read and write** permissions (fine-grained) or `repo` scope (classic). This token is used by the app in the browser to push book changes back to `books.json`.
+   - `FIREBASE_API_KEY` — your Firebase Web API key
+   - `FIREBASE_AUTH_DOMAIN` — e.g. `your-project.firebaseapp.com`
+   - `FIREBASE_PROJECT_ID` — your Firebase project ID
+   - `FIREBASE_STORAGE_BUCKET` — e.g. `your-project.appspot.com`
+   - `FIREBASE_MESSAGING_SENDER_ID` — your Firebase sender ID
+   - `FIREBASE_APP_ID` — your Firebase app ID
 
 4. Go to **Settings → Pages** → **Source**: select **GitHub Actions**
 
-The GitHub Action will automatically replace `YOUR_BOOK_PASSWORD` and `YOUR_GH_PAT` with your secrets when deploying.
+5. **Set up Firebase**:
+
+   a. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project (or use an existing one).
+   b. Register a **web app** in your Firebase project to get the Firebase config values.
+   c. In the Firebase Console, go to **Firestore Database → Create database** and choose your preferred region (start in test mode).
+   d. Copy your Firebase config (`apiKey`, `authDomain`, `projectId`, etc.) into **GitHub secrets** (step 3 above) — they'll be injected at deploy time.
+   e. **Firestore Security Rules** — for a personal app protected by the shared password, set these rules in the Firebase Console → Firestore → Rules:
+
+```firestore
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /books/{document} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+## Migrating existing data from `books.json`
+
+If you already have data in `books.json`, run the one-time migration script:
+
+```bash
+npm install firebase-admin
+# Download your service account key from Firebase Console → Project Settings → Service Accounts
+# Save it as service-account.json in the project root
+node scripts/migrate-to-firestore.mjs
+# Then delete books.json (it's no longer needed)
+```
+
+The GitHub Action will automatically replace `YOUR_BOOK_PASSWORD` with your secret when deploying.
 
 ## Tech
 
-Vanilla HTML, CSS, and JavaScript. No frameworks, no build tools. Data stored in `localStorage` and synced to `books.json` in the repo via the GitHub Contents API.
+Vanilla HTML, CSS, and JavaScript. No frameworks, no build tools. Data stored in `localStorage` and synced to **Firestore**.

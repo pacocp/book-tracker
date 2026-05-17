@@ -464,17 +464,26 @@
   </div>
 </main>
 
-<footer id="footer">📗 Books are synced to the GitHub repo. Made with love by pacocp.</footer>
+<footer id="footer">📚 Books are synced to Firestore. Made with love by pacocp.</footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
   // === CONFIGURATION ===
   const BOOK_PASSWORD = 'YOUR_BOOK_PASSWORD';
-  const GH_PAT = 'YOUR_GH_PAT';
-  const GITHUB_OWNER = 'pacocp';
-  const GITHUB_REPO = 'book-tracker';
-  const GITHUB_BOOKS_PATH = 'books.json';
-  const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${GITHUB_BOOKS_PATH}`;
-  const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_BOOKS_PATH}`;
+
+  const FIREBASE_CONFIG = {
+    apiKey: 'YOUR_FIREBASE_API_KEY',
+    authDomain: 'YOUR_FIREBASE_AUTH_DOMAIN',
+    projectId: 'YOUR_FIREBASE_PROJECT_ID',
+    storageBucket: 'YOUR_FIREBASE_STORAGE_BUCKET',
+    messagingSenderId: 'YOUR_FIREBASE_MESSAGING_SENDER_ID',
+    appId: 'YOUR_FIREBASE_APP_ID'
+  };
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const db = firebase.firestore();
+  const BOOKS_REF = db.collection('books').doc('data');
 
   // === SESSION ===
   const AUTH_KEY = 'booklist_auth';
@@ -625,59 +634,31 @@
     scheduleSync();
   }
 
-  // === GITHUB SYNC ===
-  function base64Encode(str) {
-    const bytes = new TextEncoder().encode(str);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
-
+  // === FIRESTORE SYNC ===
   let syncTimeout = null;
   function scheduleSync() {
     if (syncTimeout) clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(syncToGitHub, 2000);
+    syncTimeout = setTimeout(saveToFirestore, 2000);
   }
 
-  async function syncToGitHub() {
+  async function saveToFirestore() {
     const data = loadData();
     try {
-      const infoResp = await fetch(GITHUB_API_URL, {
-        headers: { Authorization: `Bearer ${GH_PAT}` }
-      });
-      let sha = null;
-      if (infoResp.ok) {
-        const info = await infoResp.json();
-        sha = info.sha;
-      }
-      const content = base64Encode(JSON.stringify(data, null, 2));
-      const body = { message: 'Update books', content };
-      if (sha) body.sha = sha;
-      await fetch(GITHUB_API_URL, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${GH_PAT}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
+      await BOOKS_REF.set(data);
     } catch (e) {
-      console.error('GitHub sync failed:', e);
+      console.error('Firestore save failed:', e);
     }
   }
 
-  async function loadFromGitHub() {
+  async function loadFromFirestore() {
     try {
-      const resp = await fetch(GITHUB_RAW_URL);
-      if (resp.ok) {
-        const data = await resp.json();
-        saveData(data);
+      const snap = await BOOKS_REF.get();
+      if (snap.exists) {
+        saveData(snap.data());
         if (isAuthenticated()) render();
       }
     } catch (e) {
-      console.error('GitHub load failed:', e);
+      console.error('Firestore load failed:', e);
     }
   }
 
@@ -787,7 +768,7 @@
 
   // === INIT ===
   checkAuth();
-  loadFromGitHub();
+  loadFromFirestore();
 </script>
 
 </body>
