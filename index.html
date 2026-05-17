@@ -324,6 +324,25 @@
       color: var(--text-muted);
       font-size: 0.75rem;
       margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .card-read-date input[type="date"] {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.3rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .card-read-date input[type="date"]:focus {
+      outline: none;
+      border-color: var(--accent);
     }
 
     .card-actions {
@@ -634,6 +653,20 @@
     scheduleSync();
   }
 
+  function updateReadDate(id, readDate) {
+    const data = loadData();
+    for (const category of ['reading', 'to-read', 'finished']) {
+      const book = data[category].find(b => b.id === id);
+      if (book) {
+        book.read_date = readDate || null;
+        break;
+      }
+    }
+    saveData(data);
+    render();
+    scheduleSync();
+  }
+
   // === FIRESTORE SYNC ===
   let syncTimeout = null;
   function scheduleSync() {
@@ -716,8 +749,9 @@
         const card = document.createElement('div');
         card.className = 'card';
         let readDateHtml = '';
-        if (book.read_date) {
-          readDateHtml = `<div class="card-read-date">✅ Read on ${esc(book.read_date)}</div>`;
+        if (book.status === 'finished') {
+          const dateVal = book.read_date || '';
+          readDateHtml = `<div class="card-read-date">✅ Read on <input type="date" class="read-date-input" data-id="${book.id}" value="${dateVal}"></div>`;
         }
         card.innerHTML = `
           <div class="card-title">${esc(book.title)}</div>
@@ -752,6 +786,9 @@
       const progress = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
       e.target.value = progress;
       updateProgress(id, progress);
+    }
+    if (e.target.classList.contains('read-date-input')) {
+      updateReadDate(e.target.dataset.id, e.target.value);
     }
   });
 
